@@ -23,8 +23,7 @@ public:
 		while (!infile.eof()) {
 			//m[lexeme] = token;
 			tokenmap.insert(lexeme, token);
-			tokens.push_back(token);
-			lexemes.push_back(lexeme);
+			tokenmap.
 
 			infile >> token >> lexeme;
 		}
@@ -33,11 +32,11 @@ public:
 	// lexeme pairs i.e.  s_and and t_begin begin t_int 27.  Each pair    // appears on its own input line.
 	// post: tokenmap has been populated
 
-	bool contains(vector<string>& v, string lex) {
-		vector<string>::iterator vitr;
+	bool contains(map<string, string>& m, string lex) {
+		map<string, string>::iterator mitr;
 		bool exists = false;
-		for (vitr=v.begin(); vitr!=v.end(); vitr++) { // if you are using an iterator to iterate through a data structure, do not change the size.
-			if (*vitr == lex)
+		for (mitr=m.begin(); mitr!=m.end(); mitr++) { // if you are using an iterator to iterate through a data structure, do not change the size.
+			if (*mitr == lex)
 				exists = true;
 		}
 		return exists;
@@ -47,38 +46,47 @@ public:
 	// received from a source code file.
 	// post: returns true if the vector contains the lexeme string, false if not.
 
-	bool isValid(string lex) { // still unsure if this method is needed yet.
-		bool valid = true;
-		// check string for being an integer.
-		if (!isalpha(lex[0])) {
-
+	bool isVariable(string lex) { // still unsure if this method is needed yet.
+		bool var = true;
+		string temp;
+		for (int i=0; i<lex.length(); i++) {
+			if ( isalpha(lex[i]) || isdigit(lex[i]) ) {
+				temp.push_back(lex[i]);
+			}
+			else var = false;
 		}
-		return valid;
+
+		return var;
+	}
+
+	bool isSymbol(string lex) {
+
+	}
+
+	bool isInt(string lex) {
+
+	}
+
+	bool isString(string lex) {
+
 	}
 
 	void scanFile(istream& infile, ostream& outfile) {
 		string lex;
 		infile >> lex;
-		vector<string> usedlexemes;
 
 		bool loop = !infile.eof();
 		while (loop) {
-			usedlexemes.push_back(lex);
-			if (contains(lexemes, lex)) {
-				if (isValid(lex)) {
-					loop = !infile.eof();
-				}
-				else {
-					loop = false;
+			lexemes.push_back(lex);
+			if (contains(tokenmap, lex)) {
 
-				}
 			}
 		}
 
-		for (int i=0; i<usedlexemes.size(); i++) {
-			lex = usedlexemes[i];
+		for (int i=0; i<lexemes(); i++) {
+			lex = lexemes[i];
 
-			if (i==usedlexemes.size()-1 && !loop)
+			if (i==lexemes.size()-1 && !loop)
 				outfile << lex << " : error: invalid token." << endl;
 			else
 				outfile << tokenmap[lex] << " : " << lex << endl;
@@ -90,7 +98,6 @@ public:
 	// post: If no error, the token and lexeme pairs for the given input
 	// file have been written to the output file.  If there is an error,
 	// the incomplete token/lexeme pairs, as well as an error message have // written to the output file.  A success or fail message has printed // to the console.
-
 };
 
 
@@ -119,7 +126,6 @@ int main() {
 	for (vitr=v.begin(); vitr!=v.end(); vitr++) {
 		cout << *vitr << endl; // print value vitr is on
 	}
-
 	return 0;
 }
 

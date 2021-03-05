@@ -29,16 +29,15 @@ public:
 	// post: tokenmap has been populated
 
 	bool contains(string lex) {
-		map<string, string>::iterator mitr;
 		bool exists = false;
-		for (mitr=tokenmap.begin(); mitr!=tokenmap.end(); mitr++) { // if you are using an iterator to iterate through a data structure, do not change the size.
+		for (int i=0; i<tokenmap.size(); i++) { // if you are using an iterator to iterate through a data structure, do not change the size.
 			if (exists)
 				exists = true;
 		}
 		return exists;
 	}
 	// pre: parameter refers to a string holding a lexeme received from a source code file.
-	// post: returns true if the vector contains the lexeme string, false if not.
+	// post: returns true if the tokenmap contains the lexeme string, false if not.
 
 	bool isVariable(string lex) { // still unsure if this method is needed yet.
 		bool var = true;
@@ -55,7 +54,7 @@ public:
 
 	bool isSymbol(char l) {
 		return (l == '=' || l == ',' || l == '(' || l == ')' || l == ';' || l == '<' || l == '>' || l == '|'
-			|| l == '!' || l == '+' || l == '-' || l == '*' || l == '/' || l == '%' || l == '&');
+			|| l == '!' || l == '+' || l == '-' || l == '*' || l == '/' || l == '%' || l == '&' || l == '"');
 	}
 
 	bool isInt(char l) {
@@ -78,18 +77,57 @@ public:
 		infile >> lex;
 
 		while ( !infile.eof() ) {
-			if ( isInt(lex[0]) ) { // following must be symbol or another number
-				for (int i=1; i<lex.length(); i++) {
-					if ( isSymbol(lex[i]) ) {
-						lexemes.push_back( lex.substr(i, i+1) );
-					}
-					else {
 
+			int t = 0;
+			string currlex;
+			while ( t<lex.length() ) {
+				// Checks if the current lexeme is an integer.
+				if ( isInt(lex[t]) ) {
+					currlex.push_back(lex[t]);
+					for (int i=t; i<lex.length(); i++) { // checks for any numbers after the first.
+						if (isInt(lex[i])) {
+							currlex.push_back(lex[i]);
+							t++;
+						}
+						else i=lex.length();
 					}
+					lexemes.push_back(currlex);
+					tokenmap[currlex] = "t_int";
 				}
-			}
-			else if ( isSymbol(lex[0]) ) {
+				// Checks if the current lexeme is a keyword or identifier.
+				else if ( isalpha(lex[t])) {
+					currlex.push_back(lex[t]);
+					for (int i=t; i<lex.length(); i++) {
+						if (isalpha(lex[i])) {
+							currlex.push_back(lex[i]);
+							t++;
+						}
+						else i=lex.length();
+					}
+					// Checks if lexeme matches a token. If not, it must be an identifier.
+					if ( contains(currlex) )
+						lexemes.push_back(currlex);
+					else tokenmap[currlex] = "t_id";
+				}
+				// Checks if the current lexeme is a symbol.
+				else if ( isSymbol(lex[t])) {
+					currlex.push_back(lex[t]);
+					if ( lex[t] == '=' && t!=lex.length()-1 && lex[t+1] == '=' ) {
+						currlex.push_back(lex[t+1]);
+						t++;
+					}
+					if ( (lex[t] == '<' || lex[t] == '>') && t!=lex.length()-1 && lex[t+1] == '=' ) {
+						currlex.push_back(lex[t+1]);
+						t++;
+					}
+					if ( lex[t] == '!' && t!=lex.length()-1 && lex[t+1] == '=') {
+						currlex.push_back(lex[t+1]);
+						t++;
+					}
+					lexemes.push_back(currlex);
+				}
 
+				else t++;
 			}
 		}
 
@@ -117,7 +155,7 @@ public:
 
 int main() {
 	string input;
-	cout << "Enter the input file name: " << endl;
+	cout << "Enter the lexeme data file name: " << endl;
 	cin >> input;
 	ifstream tokenfile(input);
 	LexAnalyzer analyzer(tokenfile);

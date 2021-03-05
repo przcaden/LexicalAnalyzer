@@ -21,7 +21,6 @@ public:
 		infile >> token >> lexeme;
 		while (!infile.eof()) {
 			tokenmap[lexeme] = token;
-
 			infile >> token >> lexeme;
 		}
 	}
@@ -38,8 +37,7 @@ public:
 		}
 		return exists;
 	}
-	// pre: parameter refers to a string holding a lexeme
-	// received from a source code file.
+	// pre: parameter refers to a string holding a lexeme received from a source code file.
 	// post: returns true if the vector contains the lexeme string, false if not.
 
 	bool isVariable(string lex) { // still unsure if this method is needed yet.
@@ -55,12 +53,20 @@ public:
 		return var;
 	}
 
-	bool isSymbol(string lex) {
-
+	bool isSymbol(char l) {
+		return (l == '=' || l == ',' || l == '(' || l == ')' || l == ';' || l == '<' || l == '>' || l == '|'
+			|| l == '!' || l == '+' || l == '-' || l == '*' || l == '/' || l == '%' || l == '&');
 	}
 
-	bool isInt(string lex) {
-
+	bool isInt(char l) {
+		bool digit = false;
+		char temp;
+		for (int i=1; i<10; i++) {
+			temp = (char)i;
+			if (l == temp)
+				digit = true;
+		}
+		return digit;
 	}
 
 	bool isString(string lex) {
@@ -71,21 +77,33 @@ public:
 		string lex;
 		infile >> lex;
 
-		bool loop = !infile.eof();
-		while (loop) {
-			lexemes.push_back(lex);
-			if (contains(lex)) {
+		while ( !infile.eof() ) {
+			if ( isInt(lex[0]) ) { // following must be symbol or another number
+				for (int i=1; i<lex.length(); i++) {
+					if ( isSymbol(lex[i]) ) {
+						lexemes.push_back( lex.substr(i, i+1) );
+					}
+					else {
+
+					}
+				}
+			}
+			else if ( isSymbol(lex[0]) ) {
 
 			}
 		}
 
+
+
+
+		// End of process: print to output file
 		for (int i=0; i<lexemes.size(); i++) {
 			lex = lexemes[i];
 
-			if (i==lexemes.size()-1 && !loop)
+			if (!contains(lex))
 				outfile << lex << " : error: invalid token." << endl;
-			//else
-				//outfile << tokenmap[lex] << " : " << lex << endl;
+			else
+				outfile << tokenmap[lex] << " : " << lex << endl;
 		}
 	}
 	// pre: 1st parameter refers to an open text file that contains source
@@ -109,7 +127,7 @@ int main() {
 	cin >> codename;
 
 	ifstream codefile(codename);
-	ostream outfile;
+	ofstream outfile("lexemeoutput.txt");
 	analyzer.scanFile(codefile, outfile);
 
 }

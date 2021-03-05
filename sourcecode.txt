@@ -1,4 +1,5 @@
 main()
     begin
         output("hello world!");
+        3x;=
     end main;

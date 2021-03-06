@@ -12,47 +12,23 @@ private:
 	vector<string> lexemes;  // source code file lexemes
 	vector<string> tokens;   // source code file tokens
 	map<string, string> tokenmap;  // valid lexeme/token pairs
-	// other private methods
-public:
-
-	LexAnalyzer(ifstream& infile) {
-		string token;
-		string lexeme;
-		infile >> token >> lexeme;
-		while (!infile.eof()) {
-			tokenmap[lexeme] = token;
-			infile >> token >> lexeme;
-		}
-	}
-	// pre: parameter refers to open data file consisting of token and
-	// lexeme pairs i.e.  s_and and t_begin begin t_int 27.  Each pair    // appears on its own input line.
-	// post: tokenmap has been populated
 
 	bool contains(string lex) {
-		bool exists = false;
-		for (int i=0; i<tokenmap.size(); i++) { // if you are using an iterator to iterate through a data structure, do not change the size.
-			if (exists)
-				exists = true;
-		}
-		return exists;
+		return (tokenmap.count(lex) > 0);
 	}
-	// pre: parameter refers to a string holding a lexeme received from a source code file.
+	// pre: parameter refers to a string containing a lexeme received from a source code file.
 	// post: returns true if the tokenmap contains the lexeme string, false if not.
 
-	bool isVariable(string lex) { // still unsure if this method is needed yet.
-
-	}
-
 	bool isSymbol(char l) {
-		return (l == '=' || l == ',' || l == '(' || l == ')' || l == ';' || l == '<' || l == '>' || l == '|'
-			|| l == '!' || l == '+' || l == '-' || l == '*' || l == '/' || l == '%' || l == '&');
-	}
+			return (l == '=' || l == ',' || l == '(' || l == ')' || l == ';' || l == '<' || l == '>' || l == '|'
+				|| l == '!' || l == '+' || l == '-' || l == '*' || l == '/' || l == '%' || l == '&');
+		}
 
 	bool isInt(char l) {
 		bool digit = false;
 		char temp;
 		for (int i=1; i<10; i++) {
-			temp = (char)i;
+			temp = '0' + i;
 			if (l == temp)
 				digit = true;
 		}
@@ -70,19 +46,36 @@ public:
 		return valid;
 	}
 
+public:
+
+	LexAnalyzer(ifstream& infile) {
+		string token;
+		string lexeme;
+		infile >> token >> lexeme;
+		while (!infile.eof()) {
+			tokenmap[lexeme] = token;
+			infile >> token >> lexeme;
+		}
+	}
+	// pre: parameter refers to open data file consisting of token and
+	// lexeme pairs i.e.  s_and and t_begin begin t_int 27.  Each pair    // appears on its own input line.
+	// post: tokenmap has been populated
+
 	void scanFile(istream& infile, ostream& outfile) {
 		string lex;
 		infile >> lex;
 
 		while ( !infile.eof() ) {
 
-			int t = 0;
+			int t = 0; // holds the index of the current lexeme.
 			string currlex;
 			while ( t<lex.length() ) {
+
 				// Checks if the current lexeme is an integer.
 				if ( isInt(lex[t]) ) {
 					cout << "in int " << lex[t] << endl;
 					currlex.push_back(lex[t]);
+					t++;
 					for (int i=t; i<lex.length(); i++) { // checks for any numbers after the first.
 						if (isInt(lex[i])) {
 							currlex.push_back(lex[i]);
@@ -93,10 +86,12 @@ public:
 					lexemes.push_back(currlex);
 					tokenmap[currlex] = "t_int";
 				}
+
 				// Checks if the current lexeme is a keyword or identifier.
 				else if ( isalpha(lex[t])) {
 					cout << "in alpha " << lex[t] << endl;
 					currlex.push_back(lex[t]);
+					t++;
 					for (int i=t; i<lex.length(); i++) {
 						if (isalpha(lex[i])) {
 							currlex.push_back(lex[i]);
@@ -109,6 +104,7 @@ public:
 						lexemes.push_back(currlex);
 					else tokenmap[currlex] = "t_id";
 				}
+
 				// Checks if the current lexeme is a symbol.
 				else if ( isSymbol(lex[t])) {
 					cout << "in symbol " << lex[t] << endl;
@@ -131,6 +127,7 @@ public:
 					}
 					else lexemes.push_back(currlex);
 				}
+
 				else if ( isString(lex, lex[t], t) ) {
 					cout << "in string " << lex[t] << endl;
 					for (int i=t; i<lex.length(); i++) {
@@ -150,14 +147,12 @@ public:
 		}
 
 
-
-
 		// End of process: print to output file
 		for (int i=0; i<lexemes.size(); i++) {
 			lex = lexemes[i];
 
 			if (!contains(lex))
-				outfile << lex << " >>>> error: invalid token." << endl;
+				outfile << lex << " >>> error: invalid token." << endl;
 			else
 				outfile << tokenmap[lex] << " : " << lex << endl;
 		}

@@ -40,21 +40,12 @@ public:
 	// post: returns true if the tokenmap contains the lexeme string, false if not.
 
 	bool isVariable(string lex) { // still unsure if this method is needed yet.
-		bool var = true;
-		string temp;
-		for (int i=0; i<lex.length(); i++) {
-			if ( isalpha(lex[i]) || isdigit(lex[i]) ) {
-				temp.push_back(lex[i]);
-			}
-			else var = false;
-		}
 
-		return var;
 	}
 
 	bool isSymbol(char l) {
 		return (l == '=' || l == ',' || l == '(' || l == ')' || l == ';' || l == '<' || l == '>' || l == '|'
-			|| l == '!' || l == '+' || l == '-' || l == '*' || l == '/' || l == '%' || l == '&' || l == '"');
+			|| l == '!' || l == '+' || l == '-' || l == '*' || l == '/' || l == '%' || l == '&');
 	}
 
 	bool isInt(char l) {
@@ -68,8 +59,15 @@ public:
 		return digit;
 	}
 
-	bool isString(string lex) {
-
+	bool isString(string lex, char l, int index) {
+		bool valid = false;;
+		if (l == '"' && index!=lex.length()-1) {
+			for (int i=index; i<lex.length(); i++) {
+				if (lex[i] == '"')
+					valid = true;
+			}
+		}
+		return valid;
 	}
 
 	void scanFile(istream& infile, ostream& outfile) {
@@ -83,6 +81,7 @@ public:
 			while ( t<lex.length() ) {
 				// Checks if the current lexeme is an integer.
 				if ( isInt(lex[t]) ) {
+					cout << "in int " << lex[t] << endl;
 					currlex.push_back(lex[t]);
 					for (int i=t; i<lex.length(); i++) { // checks for any numbers after the first.
 						if (isInt(lex[i])) {
@@ -96,6 +95,7 @@ public:
 				}
 				// Checks if the current lexeme is a keyword or identifier.
 				else if ( isalpha(lex[t])) {
+					cout << "in alpha " << lex[t] << endl;
 					currlex.push_back(lex[t]);
 					for (int i=t; i<lex.length(); i++) {
 						if (isalpha(lex[i])) {
@@ -111,24 +111,42 @@ public:
 				}
 				// Checks if the current lexeme is a symbol.
 				else if ( isSymbol(lex[t])) {
+					cout << "in symbol " << lex[t] << endl;
 					currlex.push_back(lex[t]);
+					t++;
 					if ( lex[t] == '=' && t!=lex.length()-1 && lex[t+1] == '=' ) {
+						cout << "in equal" << endl;
 						currlex.push_back(lex[t+1]);
 						t++;
 					}
 					if ( (lex[t] == '<' || lex[t] == '>') && t!=lex.length()-1 && lex[t+1] == '=' ) {
+						cout << "in less than/gt" << endl;
 						currlex.push_back(lex[t+1]);
 						t++;
 					}
 					if ( lex[t] == '!' && t!=lex.length()-1 && lex[t+1] == '=') {
+						cout << "in negator" << endl;
 						currlex.push_back(lex[t+1]);
 						t++;
 					}
+					else lexemes.push_back(currlex);
+				}
+				else if ( isString(lex, lex[t], t) ) {
+					cout << "in string " << lex[t] << endl;
+					for (int i=t; i<lex.length(); i++) {
+						if (lex[i] != '"') {
+							currlex.push_back(lex[i]);
+							t = i;
+						}
+					}
 					lexemes.push_back(currlex);
+					tokenmap[currlex] = "t_str";
 				}
 
 				else t++;
 			}
+
+			infile >> lex;
 		}
 
 
@@ -139,7 +157,7 @@ public:
 			lex = lexemes[i];
 
 			if (!contains(lex))
-				outfile << lex << " : error: invalid token." << endl;
+				outfile << lex << " >>>> error: invalid token." << endl;
 			else
 				outfile << tokenmap[lex] << " : " << lex << endl;
 		}
@@ -168,6 +186,7 @@ int main() {
 	ofstream outfile("lexemeoutput.txt");
 	analyzer.scanFile(codefile, outfile);
 
+	return 0;
 }
 
 /*

@@ -1,0 +1,9 @@
+mmain( >>>> error: invalid token.
+mmain() >>>> error: invalid token.
+= >>>> error: invalid token.
+; >>>> error: invalid token.
+ooutput( >>>> error: invalid token.
+ooutput(hello >>>> error: invalid token.
+wworld! >>>> error: invalid token.
+wworld!); >>>> error: invalid token.
+wworld!);; >>>> error: invalid token.

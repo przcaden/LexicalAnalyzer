@@ -1,14 +1,18 @@
 t_main : main
-main( >>> error: invalid token.
-main() >>> error: invalid token.
+s_lparen : (
+s_rparen : )
 t_begin : begin
+t_if : if
+s_lparen : (
+3xe >>> error: invalid token.
+s_assign : =
 s_assign : =
 t_int : 5
-5; >>> error: invalid token.
+s_rparen : )
 t_output : output
-output( >>> error: invalid token.
-t_str : output(hello
-world! >>> error: invalid token.
-t_str : world!);
-world!);; >>> error: invalid token.
+s_lparen : (
+t_str : hello
+s_not : !
+s_rparen : )
+s_semi : ;
 t_end : end

@@ -2,7 +2,8 @@ t_main : main
 s_lparen : (
 s_rparen : )
 t_begin : begin
-t_id : x
+t_integer : integer
+t_id : x3
 s_assign : =
 t_int : 5
 s_semi : ;
@@ -11,10 +12,16 @@ s_lparen : (
 t_id : x3
 s_eq : ==
 t_int : 5
+s_or : ||
+t_id : x3
+s_ge : >=
+t_int : 10
 s_rparen : )
 t_output : output
 s_lparen : (
-t_str : helloworld!);
+t_str : hello world!
+s_rparen : )
+s_semi : ;
 t_end : end
 t_main : main
 s_semi : ;

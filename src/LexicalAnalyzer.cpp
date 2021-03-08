@@ -1,5 +1,5 @@
 
-#include<iostream>
+#include <iostream>
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -23,18 +23,21 @@ private:
 		return (l == '=' || l == ',' || l == '(' || l == ')' || l == ';' || l == '<' || l == '>' || l == '|'
 			|| l == '!' || l == '+' || l == '-' || l == '*' || l == '/' || l == '%' || l == '&');
 	}
-	// pre: parameter
+	// pre: parameter is a character within a lexeme gotten from a source code file.
+	// post: returns true if the character is a valid lexeme symbol, false if not.
 
 	bool isInt(char l) {
 		bool digit = false;
 		char temp;
-		for (int i=1; i<10; i++) {
+		for (int i=0; i<10; i++) {
 			temp = '0' + i;
 			if (l == temp)
 				digit = true;
 		}
 		return digit;
 	}
+	// pre: pre: parameter is a character within a lexeme gotten from a source code file.
+	// post: returns true if the character is a digit 0-9, false if not.
 
 	bool isString(string lex, char l, int& index) {
 		bool valid = false;
@@ -46,6 +49,10 @@ private:
 		}
 		return valid;
 	}
+	// pre: 1st parameter is a lexeme gotten from the source code file, 2nd param is the current
+	// iterated character of the lexeme, 3rd param is the index of the character.
+	// post: returns true if there are two double quotation characters found in the current line
+	// of the source code file, false if not.
 
 	bool checkInt(int& index, string& currlex, string lex) {
 		currlex.push_back(lex[index]);
@@ -64,6 +71,11 @@ private:
 		}
 		return valid;
 	}
+	// pre: 1st parameter refers the index of a lexeme gotten from the source code being iterated over,
+	// 2nd param refers to the current lexeme that will be pushed into the lexeme vector, 3rd param refers
+	// to a lexeme gotten from the source code file.
+	// post: returns true if the lexeme consists of only digits, otherwise the lexeme is labeled as an
+	// identifier and returns false.
 
 	void checkKeyword(int& index, string& currlex, string lex) {
 		currlex.push_back(lex[index]);
@@ -80,44 +92,41 @@ private:
 		if ( !contains(currlex) )
 			tokenmap[currlex] = "t_id";
 	}
+	// pre: 1st parameter refers the index of a lexeme gotten from the source code being iterated over,
+	// 2nd param refers to the current lexeme that will be pushed into the lexeme vector, 3rd param refers
+	// to a lexeme gotten from the source code file.
+	// post: the current lexeme is populated with characters until the lexeme reaches a character that is not
+	// alphabetical. if the lexeme is not found in the tokenmap, a new key is added for an identifier.
 
 	void checkSymbol(int& index, string& currlex, string lex) {
 		currlex.push_back(lex[index]);
 		index++;
-		if ( lex[index-1] == '=' && index!=lex.length() && lex[index] == '=' ) {
-			currlex.push_back(lex[index]);
-			index++;
-		}
-		else if ( (lex[index-1] == '<' || lex[index-1] == '>') && index!=lex.length() && lex[index] == '=' ) {
-			currlex.push_back(lex[index]);
-			index++;
-		}
-		else if ( lex[index-1] == '!' && index!=lex.length() && lex[index] == '=') {
+		if ( (index!=lex.length()) && ((lex[index-1] == '=' && lex[index] == '=')
+				|| ( (lex[index-1] == '<' || lex[index-1] == '>') && lex[index] == '=' ) || ( lex[index-1] == '!' && lex[index] == '=' )
+				|| ( lex[index-1] == '|' && lex[index] == '|' ) || ( lex[index-1] == '&' && lex[index] == '&' )) ) {
 			currlex.push_back(lex[index]);
 			index++;
 		}
 		lexemes.push_back(currlex);
 	}
+	// pre: 1st parameter refers the index of a lexeme gotten from the source code being iterated over,
+	// 2nd param refers to the current lexeme that will be pushed into the lexeme vector, 3rd param refers
+	// to a lexeme gotten from the source code file.
+	// post: pushes any possible symbols into the lexemes vector. if any lexeme contains an operator that
+	// consists of more than one character, the entire operator is pushed into the vector instead.
 
 	void checkString(string& lex, int& index, string& currlex, istream& infile) {
 		index++;
-		bool endofstr = false;
-		while (!endofstr) {
-			while ( index<lex.length() ) {
-				if (lex[index] != '"') {
-					cout << "iterating string..." << endl;
-					currlex.push_back(lex[index]);
-				}
-				else
-					endofstr = true;
+		bool end = false;
+		while ( !end ) {
+			if (lex[index] == '"')
+				end = true;
+			else {
+				currlex.push_back(lex[index]);
 				index++;
 			}
-			if (!endofstr) {
-				currlex.push_back(' ');
-				infile >> lex;
-				index = 0;
-			}
 		}
+		index++;
 		lexemes.push_back(currlex);
 		tokenmap[currlex] = "t_str";
 	}
@@ -145,7 +154,7 @@ private:
 	}
 	// pre: parameter refers to an output file
 	// post: lexeme vector is iterated through and the validity of each lexeme is written to the
-	// output file. End result of source code running is outputted in the console.
+	// output file. end result of the source code scan is outputted in the console.
 
 public:
 
@@ -164,49 +173,43 @@ public:
 
 	void scanFile(istream& infile, ostream& outfile) {
 		string lex;
-		//getline(infile, lex);
-		infile >> lex;
-
-		while ( !infile.eof() ) {
-			cout << lex << endl;
-			int index = 0; // holds the index of the current lexeme.
-			string currlex;
+		while ( getline(infile, lex) ) {
+			int index = 0;
+			string currlex; // Individual lexeme that will be extracted from each line.
 			while ( index<lex.length() ) {
 
-				// Checks if the current lexeme is an integer.
-				if ( isInt(lex[index]) ) {
+				// Performs checks if the current lexeme is a keyword or identifier.
+				if ( isalpha(lex[index]) ) {
+					checkKeyword(index, currlex, lex);
+					currlex.clear();
+				}
+
+				// Performs checks if the current lexeme is an integer.
+				else if ( isInt(lex[index]) ) {
 					if (checkInt(index, currlex, lex))
 						tokenmap[currlex] = "t_int";
 					lexemes.push_back(currlex);
 					currlex.clear();
 				}
 
-				// Checks if the current lexeme is a keyword or identifier.
-				if ( isalpha(lex[index]) ) {
-					checkKeyword(index, currlex, lex);
-					currlex.clear();
-				}
-
-				// Checks if the current lexeme is a symbol.
-				if ( isSymbol(lex[index]) ) {
+				// Performs checks if the current lexeme is a symbol.
+				else if ( isSymbol(lex[index]) ) {
 					checkSymbol(index, currlex, lex);
 					currlex.clear();
 				}
 
-				// Checks if the current lexeme is a string held in double quotations.
-				if ( isString(lex, lex[index], index) ) {
+				// Performs checks if the current lexeme is a string held in double quotations.
+				else if ( isString(lex, lex[index], index) ) {
 					checkString(lex, index, currlex, infile);
 					currlex.clear();
 				}
+				else index++;
 			}
-			infile >> lex;
 		}
-
 		checkValidity(outfile);
 	}
 	// pre: 1st parameter refers to an open text file that contains source
-	// code in the language, 2nd parameter refers to an open empty output
-	// file
+	// code in the language, 2nd parameter refers to an open empty output file
 	// post: If no error, the token and lexeme pairs for the given input
 	// file have been written to the output file.  If there is an error,
 	// the incomplete token/lexeme pairs, as well as an error message have
@@ -218,33 +221,18 @@ public:
 int main() {
 	string input;
 	cout << "Enter the lexeme data file name: " << endl;
-	//cin >> input;
-	ifstream tokenfile("tokenlexemedata.txt");
+	cin >> input;
+	ifstream tokenfile(input);
 	LexAnalyzer analyzer(tokenfile);
 
 	cout << "Enter name of source code file: " << endl;
-	//cin >> input;
-	ifstream codefile("sourcecode.txt");
-
-	if (!tokenfile || !codefile) {
-		cout << "error: could not open one of the input files." << endl;
-		//exit(-1);
-	}
+	cin >> input;
+	ifstream codefile(input);
 
 	cout << "Enter the name of the data output file: " << endl;
-	//cin >> input;
-	ofstream outfile("lexemeoutput.txt");
+	cin >> input;
+	ofstream outfile(input);
 	analyzer.scanFile(codefile, outfile);
 
 	return 0;
 }
-
-/*
-	x = 3; valid --> x is not a keyword, must be a variable. = is a symbol. 3 is a number (t_int). ; is a symbol (s_semi)
-	3;=x valid
-	3=;x valid
-	x3;= valid
-	3x;= NOT VALID:
-
-	x3main ---> x is no other token, must be a variable. 3 and main are also part of the variable.
-*/

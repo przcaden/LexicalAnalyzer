@@ -1,6 +1,6 @@
 main()
-    begin
-    	x=5;
-    	if (x3 ==5)
-        	output("helloworld!");
-    end main;
+	begin
+		integer x3=5;
+		if (x3 == 5 || x3>=10)
+			output("hello world!");
+	end main;

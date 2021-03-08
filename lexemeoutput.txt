@@ -2,17 +2,19 @@ t_main : main
 s_lparen : (
 s_rparen : )
 t_begin : begin
+t_id : x
+s_assign : =
+t_int : 5
+s_semi : ;
 t_if : if
 s_lparen : (
-3xe >>> error: invalid token.
-s_assign : =
-s_assign : =
+t_id : x3
+s_eq : ==
 t_int : 5
 s_rparen : )
 t_output : output
 s_lparen : (
-t_str : hello
-s_not : !
-s_rparen : )
-s_semi : ;
+t_str : helloworld!);
 t_end : end
+t_main : main
+s_semi : ;

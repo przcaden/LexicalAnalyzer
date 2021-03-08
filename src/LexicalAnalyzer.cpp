@@ -36,8 +36,8 @@ private:
 		return digit;
 	}
 
-	bool isString(string lex, char l, int index) {
-		bool valid = false;;
+	bool isString(string lex, char l, int& index) {
+		bool valid = false;
 		if (l == '"' && index!=lex.length()-1) {
 			for (int i=index; i<lex.length(); i++) {
 				if (lex[i] == '"')
@@ -69,44 +69,83 @@ private:
 		currlex.push_back(lex[index]);
 		index++;
 		for (int i=index; i<lex.length(); i++) {
-			if ( isalpha(lex[i]) || isInt(lex[i] && !isSymbol(lex[i])) ) {
+			if ( isalpha(lex[i]) || isInt(lex[i]) ) {
 				currlex.push_back(lex[i]);
 				index++;
 			}
 			else i=lex.length();
 		}
+		// Checks if lexeme matches a token. If not, it must be an identifier.
+		lexemes.push_back(currlex);
+		if ( !contains(currlex) )
+			tokenmap[currlex] = "t_id";
 	}
 
 	void checkSymbol(int& index, string& currlex, string lex) {
 		currlex.push_back(lex[index]);
 		index++;
-		if ( lex[index] == '=' && index!=lex.length()-1 && lex[index+1] == '=' ) {
-			cout << "in equal" << endl;
-			currlex.push_back(lex[index+1]);
+		if ( lex[index-1] == '=' && index!=lex.length() && lex[index] == '=' ) {
+			currlex.push_back(lex[index]);
 			index++;
 		}
-		if ( (lex[index] == '<' || lex[index] == '>') && index!=lex.length()-1 && lex[index+1] == '=' ) {
-			cout << "in less than/gt" << endl;
-			currlex.push_back(lex[index+1]);
+		else if ( (lex[index-1] == '<' || lex[index-1] == '>') && index!=lex.length() && lex[index] == '=' ) {
+			currlex.push_back(lex[index]);
 			index++;
 		}
-		if ( lex[index] == '!' && index!=lex.length()-1 && lex[index+1] == '=') {
-			cout << "in negator" << endl;
-			currlex.push_back(lex[index+1]);
+		else if ( lex[index-1] == '!' && index!=lex.length() && lex[index] == '=') {
+			currlex.push_back(lex[index]);
 			index++;
 		}
-		else lexemes.push_back(currlex);
+		lexemes.push_back(currlex);
 	}
 
-	void checkString(int& index, string& currlex, string lex) {
+	void checkString(string& lex, int& index, string& currlex, istream& infile) {
 		index++;
-		for (int i=index; i<lex.length(); i++) {
-			if (lex[i] != '"') {
-				currlex.push_back(lex[i]);
-				index = i;
+		bool endofstr = false;
+		while (!endofstr) {
+			while ( index<lex.length() ) {
+				if (lex[index] != '"') {
+					cout << "iterating string..." << endl;
+					currlex.push_back(lex[index]);
+				}
+				else
+					endofstr = true;
+				index++;
+			}
+			if (!endofstr) {
+				currlex.push_back(' ');
+				infile >> lex;
+				index = 0;
 			}
 		}
+		lexemes.push_back(currlex);
+		tokenmap[currlex] = "t_str";
 	}
+	// pre: 1st parameter refers to a lexeme received from the source code file, 2nd parameter refers
+	// to the index of the lexeme, 3rd param refers to the current lexeme that will be pushed into the
+	// lexeme vector, 4th param refers to source code file.
+	// post: method iterates through all characters within double quotation marks, pushing each character
+	// into the current lexeme.
+
+	void checkValidity(ostream& outfile) {
+		bool valid = true;
+		// End of process: print to output file
+		for (int i=0; i<lexemes.size(); i++) {
+			string lex = lexemes[i];
+			if (!contains(lex)) {
+				outfile << lex << " >>> error: invalid token." << endl;
+				valid = false;
+			}
+			else
+				outfile << tokenmap[lex] << " : " << lex << endl;
+		}
+		if (valid)
+			cout << "valid: source code was ran successfully." << endl;
+		else cout << "error: source code contains an invalid token.";
+	}
+	// pre: parameter refers to an output file
+	// post: lexeme vector is iterated through and the validity of each lexeme is written to the
+	// output file. End result of source code running is outputted in the console.
 
 public:
 
@@ -125,61 +164,45 @@ public:
 
 	void scanFile(istream& infile, ostream& outfile) {
 		string lex;
+		//getline(infile, lex);
 		infile >> lex;
 
 		while ( !infile.eof() ) {
+			cout << lex << endl;
 			int index = 0; // holds the index of the current lexeme.
 			string currlex;
 			while ( index<lex.length() ) {
-				currlex.clear();
+
 				// Checks if the current lexeme is an integer.
 				if ( isInt(lex[index]) ) {
 					if (checkInt(index, currlex, lex))
 						tokenmap[currlex] = "t_int";
 					lexemes.push_back(currlex);
+					currlex.clear();
 				}
-				currlex.clear();
 
 				// Checks if the current lexeme is a keyword or identifier.
 				if ( isalpha(lex[index]) ) {
 					checkKeyword(index, currlex, lex);
-					// Checks if lexeme matches a token. If not, it must be an identifier.
-					if ( contains(currlex) )
-						lexemes.push_back(currlex);
-					else tokenmap[currlex] = "t_id";
+					currlex.clear();
 				}
-				currlex.clear();
 
 				// Checks if the current lexeme is a symbol.
-				if ( isSymbol(lex[index]) )
+				if ( isSymbol(lex[index]) ) {
 					checkSymbol(index, currlex, lex);
-				currlex.clear();
+					currlex.clear();
+				}
 
 				// Checks if the current lexeme is a string held in double quotations.
 				if ( isString(lex, lex[index], index) ) {
-					checkString(index, currlex, lex);
-					lexemes.push_back(currlex);
-					tokenmap[currlex] = "t_str";
+					checkString(lex, index, currlex, infile);
+					currlex.clear();
 				}
-				//else index++;
 			}
 			infile >> lex;
 		}
 
-		bool valid = true;
-		// End of process: print to output file
-		for (int i=0; i<lexemes.size(); i++) {
-			lex = lexemes[i];
-			if (!contains(lex)) {
-				outfile << lex << " >>> error: invalid token." << endl;
-				valid = false;
-			}
-			else
-				outfile << tokenmap[lex] << " : " << lex << endl;
-		}
-		if (valid)
-			cout << "Valid: Source code was ran successfully." << endl;
-		else cout << "Error: Code was ran unsuccessfully. Source code contains an invalid token.";
+		checkValidity(outfile);
 	}
 	// pre: 1st parameter refers to an open text file that contains source
 	// code in the language, 2nd parameter refers to an open empty output
@@ -202,6 +225,11 @@ int main() {
 	cout << "Enter name of source code file: " << endl;
 	//cin >> input;
 	ifstream codefile("sourcecode.txt");
+
+	if (!tokenfile || !codefile) {
+		cout << "error: could not open one of the input files." << endl;
+		//exit(-1);
+	}
 
 	cout << "Enter the name of the data output file: " << endl;
 	//cin >> input;

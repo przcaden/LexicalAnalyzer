@@ -1,5 +1,6 @@
 main()
     begin
-    	if (3xe == 5)
-        	output("hello world!);
+    	x=5;
+    	if (x3 ==5)
+        	output("helloworld!");
     end main;

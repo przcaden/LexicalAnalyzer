@@ -52,6 +52,6 @@ t_main : main
 s_semi : ;
 ```
 
-## Known issues
+## Known issues (needs to be fixed)
 - Does not check for invalid symbols (such as $, @, ~)
 - The program will not run successfully when only a single quotation mark is foundin a line. It will continually search for a second one.

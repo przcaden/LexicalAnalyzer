@@ -1,6 +1,6 @@
 # LexicalAnalyzer
 
-This program serves as a pseudo-compiler, checking for valid symbols and lexemes. Lexemes are keywords that are associated with specific tasks or meanings in your code, while tokens are the lexems' associated phrases the compiler will use. The lexical analyzer will iterate through a source code file and determine if it contains valid lexemes that have a certain token associated with them. This program was written in C++, though the lexical analyzer will scan a hypothetical programming language shown later in this readme.
+This program serves as a pseudo-compiler, checking for valid symbols and lexemes. Lexemes are keywords that are associated with specific tasks or meanings in your code, while tokens are the lexemes' associated phrases the compiler will use. The lexical analyzer will iterate through a source code file and determine if it contains valid lexemes that have a certain token associated with them. This program was written in C++, though the lexical analyzer will scan a hypothetical programming language shown later in this readme.
 
 ## Process
 

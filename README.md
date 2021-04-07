@@ -14,29 +14,30 @@ Source code written like this, for example:
 ```
 main()
 	begin
-		integer x3=5;
-		if (x3 == 5 || x3>=10)
-			output("hello world!");
-	end main;
+		integer var=5;
+		if (var == 5 || var>=10)
+			output("hello world!")
+		end if
+	end
   ```
   Will produce an output like this:
   ```
-  t_main : main
+t_main : main
 s_lparen : (
 s_rparen : )
 t_begin : begin
 t_integer : integer
-t_id : x3
+t_var : var
 s_assign : =
 t_int : 5
 s_semi : ;
 t_if : if
 s_lparen : (
-t_id : x3
+t_var : var
 s_eq : ==
 t_int : 5
 s_or : ||
-t_id : x3
+t_var : var
 s_ge : >=
 t_int : 10
 s_rparen : )
@@ -44,10 +45,9 @@ t_output : output
 s_lparen : (
 t_str : hello world!
 s_rparen : )
-s_semi : ;
 t_end : end
-t_main : main
-s_semi : ;
+t_if : if
+t_end : end
 ```
 
 ## Known issues (needs to be fixed)
